@@ -1,60 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
 <head>
-    <meta charset="UTF-8">
-    <title>Rotating Cube</title>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | Dual Animations</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
     <style>
         .unity-canvas {
             width: 960px;
             height: 600px;
-            display: none; /* Initially hide both */
-        }
-
-        .show {
-            display: block;
+            display: none; /* Hide initially */
         }
     </style>
 </head>
 <body>
-    <div id="clockwise" class="unity-canvas"></div>
-    <div id="counterclockwise" class="unity-canvas"></div>
+    <div id="unity-container-clockwise" class="unity-canvas">
+        <canvas id="unity-canvas-clockwise" width="960" height="600"></canvas>
+    </div>
+    <div id="unity-container-counterclockwise" class="unity-canvas">
+        <canvas id="unity-canvas-counterclockwise" width="960" height="600"></canvas>
+    </div>
 
     <script>
-        var showClockwise = true;
-
-        function loadUnity(containerId, buildPath) {
+        function loadUnity(buildUrl, containerId, canvasId) {
             var container = document.getElementById(containerId);
+            var canvas = document.getElementById(canvasId);
+            var loaderUrl = buildUrl + '.loader.js';
+            var config = {
+                dataUrl: buildUrl + '.data',
+                frameworkUrl: buildUrl + '.framework.js',
+                codeUrl: buildUrl + '.wasm',
+                streamingAssetsUrl: 'StreamingAssets',
+                companyName: 'DefaultCompany',
+                productName: 'My project',
+                productVersion: '0.1',
+            };
+
             var script = document.createElement('script');
-            script.src = buildPath + '.loader.js';
+            script.src = loaderUrl;
             script.onload = () => {
-                createUnityInstance(container, {
-                    dataUrl: buildPath + '.data',
-                    frameworkUrl: buildPath + '.framework.js',
-                    codeUrl: buildPath + '.wasm',
-                    streamingAssetsUrl: 'StreamingAssets',
-                    companyName: 'YourCompanyName',
-                    productName: 'YourProductName',
-                    productVersion: '1.0'
-                }).then(unityInstance => {
+                createUnityInstance(canvas, config).then((unityInstance) => {
                     container.unityInstance = unityInstance;
-                    // Initially set display to block for the first canvas
-                    if (containerId === 'clockwise') {
-                        container.style.display = 'block';
-                    }
+                }).catch((message) => {
+                    console.error(message);
                 });
             };
             document.body.appendChild(script);
         }
 
-        // Adjust these paths to point to the correct locations of your Unity WebGL builds
-        loadUnity('clockwise', 'clockwise/Build/clockwise');
-        loadUnity('counterclockwise', 'counterclockwise/Build/counterclockwise');
+        // Load both Unity WebGL builds
+        loadUnity('Build/clockwise', 'unity-container-clockwise', 'unity-canvas-clockwise');
+        loadUnity('Build/counterclockwise', 'unity-container-counterclockwise', 'unity-canvas-counterclockwise');
 
+        // Alternate between the two animations every second
         setInterval(() => {
-            document.getElementById('clockwise').style.display = showClockwise ? 'block' : 'none';
-            document.getElementById('counterclockwise').style.display = showClockwise ? 'none' : 'block';
-            showClockwise = !showClockwise;
-        }, 1000); // Switch every second
+            var containerClockwise = document.getElementById('unity-container-clockwise');
+            var containerCounterclockwise = document.getElementById('unity-container-counterclockwise');
+            var displayClockwise = containerClockwise.style.display === 'none';
+
+            containerClockwise.style.display = displayClockwise ? 'block' : 'none';
+            containerCounterclockwise.style.display = displayClockwise ? 'none' : 'block';
+        }, 1000);
     </script>
 </body>
 </html>
+
