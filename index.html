@@ -1,65 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Unity WebGL Alternating Animations</title>
+    <meta charset="UTF-8">
+    <title>Unity WebGL Player | Alternating Animations</title>
     <style>
-        .unity-canvas {
+        .unity-container {
+            display: none;
             width: 960px;
             height: 600px;
         }
     </style>
 </head>
 <body>
-    <div id="unity-container-clockwise" class="unity-canvas" style="display: none;">
-        <canvas id="unity-canvas-clockwise"></canvas>
+    <div id="clockwise-container" class="unity-container">
+        <canvas id="clockwise-canvas"></canvas>
     </div>
-    <div id="unity-container-counterclockwise" class="unity-canvas" style="display: none;">
-        <canvas id="unity-canvas-counterclockwise"></canvas>
+    <div id="counterclockwise-container" class="unity-container">
+        <canvas id="counterclockwise-canvas"></canvas>
     </div>
 
     <script>
-        let currentShowing = 'clockwise';
-
-        function loadUnity(containerId, buildPath) {
-            var container = document.getElementById(containerId);
-            var canvas = container.getElementsByTagName('canvas')[0];
+        function loadUnity(instanceId, buildUrl) {
             var script = document.createElement('script');
-            script.src = `${buildPath}.loader.js`;
+            script.src = `${buildUrl}.loader.js`;
+            document.body.appendChild(script);
+
             script.onload = () => {
+                var canvas = document.getElementById(`${instanceId}-canvas`);
                 createUnityInstance(canvas, {
-                    dataUrl: `${buildPath}.data`,
-                    frameworkUrl: `${buildPath}.framework.js`,
-                    codeUrl: `${buildPath}.wasm`,
-                    // Other configuration options as needed
+                    dataUrl: `${buildUrl}.data`,
+                    frameworkUrl: `${buildUrl}.framework.js`,
+                    codeUrl: `${buildUrl}.wasm`
                 }).then((unityInstance) => {
-                    // Instance loaded, can set to display:block if it's the first one to show
-                    if (containerId.includes(currentShowing)) {
-                        container.style.display = 'block';
+                    if (instanceId === 'clockwise') {
+                        document.getElementById(`${instanceId}-container`).style.display = 'block';
                     }
                 }).catch((message) => {
                     console.error(message);
                 });
             };
-            document.body.appendChild(script);
         }
 
-        loadUnity('unity-container-clockwise', 'clockwise/Build/clockwise');
-        loadUnity('unity-container-counterclockwise', 'counterclockwise/Build/counterclockwise');
+        loadUnity('clockwise', 'clockwise/Build/clockwise');
+        loadUnity('counterclockwise', 'counterclockwise/Build/counterclockwise');
 
+        let isClockwiseShowing = true;
         setInterval(() => {
-            const containerClockwise = document.getElementById('unity-container-clockwise');
-            const containerCounterclockwise = document.getElementById('unity-container-counterclockwise');
-
-            if (currentShowing === 'clockwise') {
-                containerClockwise.style.display = 'none';
-                containerCounterclockwise.style.display = 'block';
-                currentShowing = 'counterclockwise';
-            } else {
-                containerClockwise.style.display = 'block';
-                containerCounterclockwise.style.display = 'none';
-                currentShowing = 'clockwise';
-            }
+            document.getElementById('clockwise-container').style.display = isClockwiseShowing ? 'none' : 'block';
+            document.getElementById('counterclockwise-container').style.display = isClockwiseShowing ? 'block' : 'none';
+            isClockwiseShowing = !isClockwiseShowing;
         }, 1000);
     </script>
 </body>
